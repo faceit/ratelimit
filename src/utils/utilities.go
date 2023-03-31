@@ -18,7 +18,7 @@ type TimeSource interface {
 // Convert a rate limit into a time divider.
 // @param unit supplies the unit to convert.
 // @return the divider to use in time computations.
-func UnitToDivider(unit pb.RateLimitResponse_RateLimit_Unit) int64 {
+func UnitToDivider(unit pb.RateLimitResponse_RateLimit_Unit, now int64) int64 {
 	switch unit {
 	case pb.RateLimitResponse_RateLimit_SECOND:
 		return 1
@@ -30,7 +30,7 @@ func UnitToDivider(unit pb.RateLimitResponse_RateLimit_Unit) int64 {
 		return 60 * 60 * 24
 	case pb.RateLimitResponse_RateLimit_MONTH:
 		// This cannot be hardcoded to 30 days, as there are months with 31 days and the TTL will expire before the end of the month
-		return 60 * 60 * 24 * daysOfCurrentMonth(time.Now().Unix()) //todo: get timesource instead of time.now.
+		return 60 * 60 * 24 * daysOfCurrentMonth(now)
 	}
 	panic("should not get here")
 }
@@ -51,7 +51,7 @@ func daysIn(m time.Month, year int) int64 {
 // CalculateReset calculates the reset time for a given unit and time source.
 func CalculateReset(unit *pb.RateLimitResponse_RateLimit_Unit, timeSource TimeSource) *duration.Duration {
 	now := timeSource.UnixNow()
-	unitInSec := UnitToDivider(*unit)
+	unitInSec := UnitToDivider(*unit, timeSource.UnixNow())
 
 	if *unit == pb.RateLimitResponse_RateLimit_MONTH {
 		y, m, _ := CurrentTime(timeSource.UnixNow()).Date()

@@ -28,6 +28,7 @@ type fixedRateLimitCacheImpl struct {
 	// limits regardless of unit. If this client is not nil, then it
 	// is used for limits that have a SECOND unit.
 	perSecondClient Client
+	timeSource      utils.TimeSource
 	baseRateLimiter *limiter.BaseRateLimiter
 }
 
@@ -74,7 +75,7 @@ func (this *fixedRateLimitCacheImpl) DoLimit(
 
 		logger.Debugf("looking up cache key: %s", cacheKey.Key)
 
-		expirationSeconds := utils.UnitToDivider(limits[i].Limit.Unit)
+		expirationSeconds := utils.UnitToDivider(limits[i].Limit.Unit, this.timeSource.UnixNow())
 		if this.baseRateLimiter.ExpirationJitterMaxSeconds > 0 {
 			expirationSeconds += this.baseRateLimiter.JitterRand.Int63n(this.baseRateLimiter.ExpirationJitterMaxSeconds)
 		}
@@ -134,6 +135,7 @@ func NewFixedRateLimitCacheImpl(client Client, perSecondClient Client, timeSourc
 	jitterRand *rand.Rand, expirationJitterMaxSeconds int64, localCache *freecache.Cache, nearLimitRatio float32, cacheKeyPrefix string, statsManager stats.Manager) limiter.RateLimitCache {
 	return &fixedRateLimitCacheImpl{
 		client:          client,
+		timeSource:      timeSource,
 		perSecondClient: perSecondClient,
 		baseRateLimiter: limiter.NewBaseRateLimit(timeSource, jitterRand, expirationJitterMaxSeconds, localCache, nearLimitRatio, cacheKeyPrefix, statsManager),
 	}

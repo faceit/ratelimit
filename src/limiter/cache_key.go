@@ -70,7 +70,7 @@ func (this *CacheKeyGenerator) GenerateCacheKey(
 		b.WriteByte('_')
 	}
 
-	divider := utils.UnitToDivider(limit.Limit.Unit)
+	divider := utils.UnitToDivider(limit.Limit.Unit, now)
 
 	// The key needs to be the same within the time unit. If we change the function,
 	// then we need to make sure the key is always the same within the time unit, so it
