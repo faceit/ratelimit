@@ -157,7 +157,7 @@ func (this *rateLimitMemcacheImpl) increaseAsync(cacheKeys []limiter.CacheKey, i
 
 		_, err := this.client.Increment(cacheKey.Key, hitsAddend)
 		if err == memcache.ErrCacheMiss {
-			expirationSeconds := utils.UnitToDivider(limits[i].Limit.Unit)
+			expirationSeconds := utils.UnitToDivider(limits[i].Limit.Unit, this.timeSource.UnixNow())
 			if this.expirationJitterMaxSeconds > 0 {
 				expirationSeconds += this.jitterRand.Int63n(this.expirationJitterMaxSeconds)
 			}
