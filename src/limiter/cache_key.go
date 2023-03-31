@@ -75,7 +75,8 @@ func (this *CacheKeyGenerator) GenerateCacheKey(
 	// The key needs to be the same within the time unit. If we change the function,
 	// then we need to make sure the key is always the same within the time unit, so it
 	// can be picked up on the next lookup.
-	// This code section handles the MONTH time unit.
+	// This code section handles the MONTH time unit and uses the unix time of the first day of the current month for
+	// the cache key.
 	if limit.Limit.Unit == pb.RateLimitResponse_RateLimit_MONTH {
 		// get the first day of the current month as unix time
 		y, m, _ := utils.CurrentTime(now).Date()
